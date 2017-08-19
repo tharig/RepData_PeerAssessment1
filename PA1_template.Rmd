@@ -31,7 +31,7 @@ proc_AD$dayOfWeek <- weekdays(as.Date(proc_AD$date))  ##  add column for day of 
 ## What is mean total number of steps taken per day?
 
 In addition to the mean, we calculate and present the median and total values for steps per day.
-The Total steps per day are plotted in a histogram. A table is displayed with comparisons of mean, median and total values for each day of the study.
+ .
 
 ```{r firstData, echo-TRUE}
 ####  What is the mean total number of steps taken each day?  ####
@@ -50,10 +50,18 @@ for(i in 1:61) {
         ##  Note: warnings are given due to mis-match in data size with these variables.
         ##  warnings are suppressed to improve report clarity. This does not affect the analysis.
 }
+```
 
+The Total steps per day are plotted in a histogram.
+
+```{r histFirstData, fig.height=4}
 ##    Make histogram of total steps taken each day
 hist(totSteps, main = "Frequency of Total Daily Steps")
+```
 
+A table is displayed with comparisons of mean, median and total values for each day of the study
+
+```{r tableFirstData, showtable, results="asis"}
 ##  Calculate and report the mean and median of the total number of steps taken per day
 dfMeanMedTotDay <- data.frame(Date=dayDate, "Mean Daily Steps"=meanSteps, 
                               "Median Daily Steps"=medSteps, "Total Daily Steps"=totSteps)

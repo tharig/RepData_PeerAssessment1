@@ -15,7 +15,8 @@ knitr::opts_chunk$set(echo = TRUE)
 The data set has been provided for this exercise. A copy is made that is then modified for analysis. Columns added are used in later steps of the analysis. 
 ```{r}
 ####  Load data and pre-processing  ####
-setwd("~/R_Files/DS5_Proj01")
+##  setwd("~/R_Files/DS5_Proj01")  ##  local
+setwd("~")  ##  online
 ##  Load the preprocessed data.
 activityData <- read.csv("activity.csv")  ##  read data
 

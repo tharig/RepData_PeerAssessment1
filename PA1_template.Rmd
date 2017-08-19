@@ -32,7 +32,7 @@ proc_AD$dayOfWeek <- weekdays(as.Date(proc_AD$date))  ##  add column for day of 
 In addition to the mean, we calculate and present the median and total values for steps per day.
 The Total steps per day are plotted in a histogram. A table is displayed with comparisons of mean, median and total values for each day of the study.
 
-```{r}
+```{r firstData, echo-TRUE}
 ####  What is the mean total number of steps taken each day?  ####
 ##    create vectors for daily mean, median and total number of steps
 meanSteps <- numeric(0)
@@ -64,7 +64,7 @@ dfMeanMedTotDay
 
 The data set was analyzed to confirm that all days had fewer intervals with non-zero data than half the total number of intervals. This results in the median values of zero for all days (with data).
 
-```{r}
+```{r checkData, echo=TRUE}
 ####  Where data available, all daily median values are zero!  ####
 ##  this happens if number of values greater than zero is less than half the total measurements.
 ##  Is this true for all days?
@@ -82,7 +82,7 @@ sum(dailyZero<145, na.rm = TRUE)
 
 The average number of steps taken in each five minute interval is computed and plotted. The maximum avareage steps for an interval is found along with the its time interval.
 
-```{r}
+```{r daily, echo=TRUE}
 ####    What is the average daily activity pattern?  ####
 ##      create variables for daily activity statistics
 fiveMinIntervals <- numeric(0)
@@ -119,7 +119,7 @@ Missing values will be replaced by the average value for the appropriate five mi
 
 Calculation of data statistics (mean, median and total for each day) are repeated for the modified data set.  Median values are now reported for the days that previously had no data. Mean and total values are higher due to the addition of values that had previously not been part of the analysis.
 
-```{r}
+```{r missingValues, echo=TRUE}
 ####  Imputting Missing Values  ####
 ##  number of missing values in data set (Note: 'steps' is the only column with missing values.)
 sum(is.na(proc_AD$steps))
@@ -159,7 +159,7 @@ dfmod_MeanMedTotDay
 
 The plot comparing weekday to weekend average interval activity clearly shows that weekdays have a spike of activity early (around 8:35), while weekends show a failry steady level of activity during the day. Inactive sleep periods are apparent in both cases.
 
-```{r}
+```{r differences, echo=TRUE}
 ####  Differences in Activity Patterns Between Weekdays and Weekends  ####
 ##  create a factor variable for 'weekday' and 'weekend' and assign to data
 proc_AD$typeOfDay <- factor(c("weekday", "weekend"))

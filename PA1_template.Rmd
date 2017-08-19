@@ -1,25 +1,195 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
+title: 'Reproducible Research: Peer Assessment 1'
+author: "Tim Harig"
+date: "August 18, 2017"
+output: html_document
+keep md: true
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
 ## Loading and preprocessing the data
 
+The data set has been provided for this exercise. A copy is made that is then modified for analysis. Columns added are used in later steps of the analysis. 
+```{r}
+####  Load data and pre-processing  ####
+setwd("~/R_Files/DS5_Proj01")
+##  Load the preprocessed data.
+activityData <- read.csv("activity.csv")  ##  read data
 
+##  create a duplicate data set for analytic process modifications
+proc_AD <- activityData
+
+proc_AD$dateNum <- as.numeric(proc_AD$date)  ##  add column expressing date factors as numeric
+proc_AD$dayOfWeek <- weekdays(as.Date(proc_AD$date))  ##  add column for day of week
+####  ####
+```
 
 ## What is mean total number of steps taken per day?
 
+In addition to the mean, we calculate and present the median and total values for steps per day.
+The Total steps per day are plotted in a histogram. A table is displayed with comparisons of mean, median and total values for each day of the study.
 
+```{r}
+####  What is the mean total number of steps taken each day?  ####
+##    create vectors for daily mean, median and total number of steps
+meanSteps <- numeric(0)
+medSteps <- numeric(0)
+totSteps <- numeric(0)
+dayDate <- numeric(0)
+
+##    for each of all 61 days of the study calculate mean, median and total steps
+for(i in 1:61) {  
+        meanSteps[i] <- mean(proc_AD$steps[proc_AD$dateNum == i], na.rm = TRUE)
+        medSteps[i] <- median(proc_AD$steps[proc_AD$dateNum == i], na.rm = TRUE)
+        totSteps[i] <- sum(proc_AD$steps[proc_AD$dateNum == i])
+        suppressWarnings(dayDate[i] <- as.character(proc_AD$date[proc_AD$dateNum == i]))
+        ##  Note: warnings are given due to mis-match in data size with these variables.
+        ##  warnings are suppressed to improve report clarity. This does not affect the analysis.
+}
+
+##    Make histogram of total steps taken each day
+hist(totSteps, main = "Frequency of Total Daily Steps")
+
+##  Calculate and report the mean and median of the total number of steps taken per day
+dfMeanMedTotDay <- data.frame(Date=dayDate, "Mean Daily Steps"=meanSteps, 
+                              "Median Daily Steps"=medSteps, "Total Daily Steps"=totSteps)
+dfMeanMedTotDay
+####  ####
+```
+
+## Check anomalous data: all median values are zero (for days with data)!
+
+The data set was analyzed to confirm that all days had fewer intervals with non-zero data than half the total number of intervals. This results in the median values of zero for all days (with data).
+
+```{r}
+####  Where data available, all daily median values are zero!  ####
+##  this happens if number of values greater than zero is less than half the total measurements.
+##  Is this true for all days?
+dailyZero <- numeric(0)
+for(i in 1:61){  ##  find total number of zero measurements for each day
+         dailyZero[i] <- sum(proc_AD$isZero[proc_AD$dateNum == i])
+}
+##  how many have non-zero value measurements less than the half the total?
+sum(dailyZero<145, na.rm = TRUE)  
+####  Median values for all days with values are correctly reported as zero.  ####
+
+```
 
 ## What is the average daily activity pattern?
 
+The average number of steps taken in each five minute interval is computed and plotted. The maximum avareage steps for an interval is found along with the its time interval.
 
+```{r}
+####    What is the average daily activity pattern?  ####
+##      create variables for daily activity statistics
+fiveMinIntervals <- numeric(0)
+hourIntervals <- numeric(0)
+intervalIndex <- numeric(0)
+fiveMinAvg <- numeric(0)
+
+##  create an index for the daily sequence of the 'interval' variable
+for (i in 1:12) {  ##  basic five minute intervals (0 to 55 for each day)
+        fiveMinIntervals[i] <- (i-1)*5
+}
+for(j in 1:24){ ##  create hour component (0, 100, 200, ... 2300)
+        hourIntervals[j] <- (j-1) * 100
+}
+for(k in 1:24){  ## create index in time format: hhmm
+        intervalIndex <- c(intervalIndex, fiveMinIntervals + hourIntervals[k])
+}
+
+##  compute the average steps for each five minute period for each day
+for(ii in intervalIndex){
+        fiveMinAvg <-  c(fiveMinAvg, mean(proc_AD$steps[proc_AD$interval == ii], na.rm = TRUE), proc_AD$typeOfDay)
+}
+
+plot(intervalIndex, fiveMinAvg, type = "l", 
+     xlab = "Five Minute Intervals", ylab = "Mean Steps per Interval")
+which.max(fiveMinAvg)  ##  max. average steps in five minute interval
+intervalIndex[which.max(fiveMinAvg)]  ##  time of day for max average steps, read as: hhmm
+####  ####
+```
 
 ## Imputing missing values
 
+Missing values will be replaced by the average value for the appropriate five minute interval. We first check to find which columns have missing data. 'Steps' is the only column that has missing data.
 
+Calculation of data statistics (mean, median and total for each day) are repeated for the modified data set.  Median values are now reported for the days that previously had no data. Mean and total values are higher due to the addition of values that had previously not been part of the analysis.
+
+```{r}
+####  Imputting Missing Values  ####
+##  number of missing values in data set (Note: 'steps' is the only column with missing values.)
+sum(is.na(proc_AD$steps))
+sum(is.na(proc_AD$interval))
+sum(is.na(proc_AD$date))
+
+##  create a missing value flag
+proc_AD$missingValue <- is.na(proc_AD$steps)
+
+##  replace missing values with average for appropriate five minute interval
+proc_AD$steps <- replace(proc_AD$steps, proc_AD$missingValue, fiveMinAvg)
+
+##    as before, create vectors for daily mean, median and total number of steps using imputted data
+mod_meanSteps <- numeric(0)
+mod_medSteps <- numeric(0)
+mod_totSteps <- numeric(0)
+
+##    for each of all 61 days, using imputted data, calculate mean, median and total steps
+for(i in 1:61) {  
+        mod_meanSteps[i] <- mean(proc_AD$steps[proc_AD$dateNum == i], na.rm = TRUE)
+        mod_medSteps[i] <- median(proc_AD$steps[proc_AD$dateNum == i], na.rm = TRUE)
+        mod_totSteps[i] <- sum(proc_AD$steps[proc_AD$dateNum == i])
+}
+
+##    Make histogram of total steps taken each day
+hist(mod_totSteps, main = "Frequency of Total Daily Steps - modified data",
+     xlab = "Total Steps per day", ylab = "Number (frequency) of Daily Occurrences")
+
+##  Calculate and report the mean and median of the total number of steps taken per day
+dfmod_MeanMedTotDay <- data.frame(Date=dayDate, "Mean daily Steps"=mod_meanSteps, 
+                                  "Median Daily Steps"=mod_medSteps, "Total Daily Steps"=mod_totSteps)
+dfmod_MeanMedTotDay
+####  ####
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+The plot comparing weekday to weekend average interval activity clearly shows that weekdays have a spike of activity early (around 8:35), while weekends show a failry steady level of activity during the day. Inactive sleep periods are apparent in both cases.
+
+```{r}
+####  Differences in Activity Patterns Between Weekdays and Weekends  ####
+##  create a factor variable for 'weekday' and 'weekend' and assign to data
+proc_AD$typeOfDay <- factor(c("weekday", "weekend"))
+proc_AD$typeOfDay <- "weekday"  ##  initialize all to 'weekday'
+##  change Sat. and Sun. factors
+proc_AD$typeOfDay[proc_AD$dayOfWeek == "Sunday"] <- "weekend"
+proc_AD$typeOfDay[proc_AD$dayOfWeek == "Saturday"] <- "weekend"
+
+##  find five minute interval averages for weekday and weekend days
+##  first, seperate weekday and weekend data
+proc_AD_wd <- subset(proc_AD, proc_AD$typeOfDay == "weekday", select = c(steps, interval, typeOfDay))
+proc_AD_we <- subset(proc_AD, proc_AD$typeOfDay == "weekend", select = c(steps, interval, typeOfDay))
+##  as before, compute the average steps for each five minute period for each type of day
+fiveMinAvg_wd <- numeric(0)
+fiveMinAvg_we <- numeric(0)
+for(ii in intervalIndex){
+        fiveMinAvg_wd <-  c(fiveMinAvg_wd, mean(proc_AD_wd$steps[proc_AD_wd$interval == ii], na.rm = TRUE))
+        fiveMinAvg_we <-  c(fiveMinAvg_we, mean(proc_AD_we$steps[proc_AD_we$interval == ii], na.rm = TRUE))
+}
+##  combine data needed to create graph in data frames
+fiveMinAvg_wd <- cbind.data.frame(intervalIndex, stepsAvg=fiveMinAvg_wd, typeOfDay="weekday")
+fiveMinAvg_we <- cbind.data.frame(intervalIndex, stepsAvg=fiveMinAvg_we, typeOfDay="weekend")
+fiveMinAvg_typeDay <- rbind(fiveMinAvg_wd, fiveMinAvg_we)
+
+##  compare graphs of weekday and weekend averages
+library("lattice", lib.loc="/Library/Frameworks/R.framework/Versions/3.3/Resources/library")
+xyplot(stepsAvg ~ intervalIndex | typeOfDay, data = fiveMinAvg_typeDay, type="l",
+       xlab = "Five Minute Intervals", ylab = "Mean Steps per Interval")
+
+############################################################################################
+```
+
+End of report.

@@ -54,7 +54,7 @@ for(i in 1:61) {
 
 The Total steps per day are plotted in a histogram.
 
-```{r histFirstData, fig.height=4}
+```{r histFirstData, results="show", fig.height=4}
 ##    Make histogram of total steps taken each day
 hist(totSteps, main = "Frequency of Total Daily Steps")
 ```
